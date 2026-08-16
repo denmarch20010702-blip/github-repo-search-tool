@@ -1,0 +1,8 @@
+venv/
+__pycache__/
+*.pyc
+repos.csv
+repos.json
+repos2.csv
+ml_repos.csv
+ai_agents.csv
