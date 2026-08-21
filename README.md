@@ -55,4 +55,4 @@ python github_search.py --topic playwright --topic pytest --output qa_tools.csv
 - [ ] Сравнение трендов по нескольким языкам в одном отчёте
 
 ---
-*Автор: [твоё имя]. Использует официальный публичный GitHub REST API (api.github.com), без скрапинга и без авторизации.*
+*Автор использует официальный публичный GitHub REST API (api.github.com), без скрапинга и без авторизации.*
