@@ -1,5 +1,6 @@
 import csv
 import json
+import sys
 
 import pytest
 import requests
@@ -196,6 +197,15 @@ def test_fetch_repos_raises_on_http_error(monkeypatch):
         fetch_repos("stars:>1000", "stars", "desc", 10)
 
 
+def test_fetch_repos_returns_empty_list_when_no_items(monkeypatch):
+    def fake_get(url, params, headers, timeout):
+        return _FakeResponse({"items": []})
+
+    monkeypatch.setattr(github_search.requests, "get", fake_get)
+
+    assert fetch_repos("language:cobol", "stars", "desc", 10) == []
+
+
 @pytest.mark.parametrize("limit", ["1", "50", "100"])
 def test_limit_accepts_values_in_valid_range(limit):
     args = build_parser().parse_args(["--limit", limit])
@@ -219,3 +229,105 @@ def test_min_stars_rejects_negative_value(capsys):
     with pytest.raises(SystemExit):
         build_parser().parse_args(["--min-stars", "-1"])
     assert "must be a non-negative integer" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("output", ["repos.csv", "repos.json", "REPOS.CSV"])
+def test_output_accepts_csv_and_json_extensions(output):
+    args = build_parser().parse_args(["--output", output])
+    assert args.output == output
+
+
+@pytest.mark.parametrize("output", ["repos.txt", "repos", "repos.csvx"])
+def test_output_rejects_unsupported_extensions(output, capsys):
+    with pytest.raises(SystemExit):
+        build_parser().parse_args(["--output", output])
+    assert "must end with .csv or .json" in capsys.readouterr().err
+
+
+def test_main_happy_path_writes_expected_csv(tmp_path, monkeypatch):
+    sample_payload = {
+        "items": [
+            {
+                "full_name": "octocat/hello-world",
+                "stargazers_count": 42,
+                "language": "Python",
+                "topics": ["ai"],
+                "html_url": "https://github.com/octocat/hello-world",
+                "description": "A sample repo",
+            }
+        ]
+    }
+
+    def fake_get(url, params, headers, timeout):
+        return _FakeResponse(sample_payload)
+
+    monkeypatch.setattr(github_search.requests, "get", fake_get)
+
+    output_path = tmp_path / "smoke.csv"
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["github_search.py", "--language", "python", "--output", str(output_path)],
+    )
+
+    github_search.main()
+
+    with open(output_path, newline="", encoding="utf-8-sig") as f:
+        row = next(csv.DictReader(f))
+
+    assert row["name"] == "octocat/hello-world"
+    assert row["stars"] == "42"
+    assert row["url"] == "https://github.com/octocat/hello-world"
+
+
+def test_main_writes_json_when_output_extension_is_uppercase(tmp_path, monkeypatch):
+    sample_payload = {
+        "items": [
+            {
+                "full_name": "octocat/hello-world",
+                "stargazers_count": 42,
+                "language": "Python",
+                "topics": [],
+                "html_url": "https://github.com/octocat/hello-world",
+                "description": "A sample repo",
+            }
+        ]
+    }
+
+    def fake_get(url, params, headers, timeout):
+        return _FakeResponse(sample_payload)
+
+    monkeypatch.setattr(github_search.requests, "get", fake_get)
+
+    output_path = tmp_path / "SMOKE.JSON"
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["github_search.py", "--language", "python", "--output", str(output_path)],
+    )
+
+    github_search.main()
+
+    with open(output_path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    assert data[0]["name"] == "octocat/hello-world"
+
+
+def test_main_prints_message_and_writes_nothing_when_no_results(tmp_path, monkeypatch, capsys):
+    def fake_get(url, params, headers, timeout):
+        return _FakeResponse({"items": []})
+
+    monkeypatch.setattr(github_search.requests, "get", fake_get)
+
+    output_path = tmp_path / "smoke.csv"
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["github_search.py", "--language", "cobol", "--output", str(output_path)],
+    )
+
+    github_search.main()
+
+    assert "ничего не найдено" in capsys.readouterr().out
+    assert not output_path.exists()

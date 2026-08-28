@@ -111,6 +111,12 @@ def _limit_int(value: str) -> int:
     return parsed
 
 
+def _output_path(value: str) -> str:
+    if not value.lower().endswith((".csv", ".json")):
+        raise argparse.ArgumentTypeError(f"must end with .csv or .json, got {value}")
+    return value
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Расширенный поиск GitHub-репозиториев")
     parser.add_argument("--language", help="Язык программирования, например 'python'")
@@ -130,7 +136,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--order", choices=["asc", "desc"], default="desc")
     parser.add_argument("--limit", type=_limit_int, default=10, help="Сколько репозиториев получить (макс. 100)")
-    parser.add_argument("--output", default="repos.csv", help="Файл для сохранения: .csv или .json")
+    parser.add_argument(
+        "--output", type=_output_path, default="repos.csv", help="Файл для сохранения: .csv или .json"
+    )
     return parser
 
 
@@ -147,7 +155,7 @@ def main():
         print("По заданным фильтрам ничего не найдено — попробуй смягчить условия.")
         return
 
-    if args.output.endswith(".json"):
+    if args.output.lower().endswith(".json"):
         save_to_json(repos, args.output)
     else:
         save_to_csv(repos, args.output)
