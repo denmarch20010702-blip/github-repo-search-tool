@@ -72,12 +72,19 @@ def fetch_repos(query: str, sort: str, order: str, limit: int) -> list[Repo]:
     ]
 
 
+def _sanitize_csv_row(row: dict) -> dict:
+    return {
+        key: f"'{value}" if isinstance(value, str) and value.startswith(("=", "+", "-", "@")) else value
+        for key, value in row.items()
+    }
+
+
 def save_to_csv(repos: list[Repo], path: str):
     with open(path, "w", newline="", encoding="utf-8-sig") as f:
         writer = csv.DictWriter(f, fieldnames=list(asdict(repos[0]).keys()))
         writer.writeheader()
         for repo in repos:
-            writer.writerow(asdict(repo))
+            writer.writerow(_sanitize_csv_row(asdict(repo)))
 
 
 def save_to_json(repos: list[Repo], path: str):
