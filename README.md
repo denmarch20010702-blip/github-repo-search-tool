@@ -26,10 +26,18 @@
 python -m venv venv
 source venv/bin/activate   # Windows: venv\Scripts\activate
 
-pip install -r requirements.txt
+pip install --require-hashes -r requirements.lock.txt
 
 python github_search.py --language python --topic machine-learning
 ```
+
+`requirements.lock.txt` фиксирует точные версии и хеши всех зависимостей (прямых и транзитивных) — установка воспроизводима на любой машине. Прямые зависимости объявлены в `requirements.in`; после его правки файл пересобирается командой `pip-compile --generate-hashes requirements.in` (пакет `pip-tools` нужен только для этого, не для обычной установки).
+
+*`requirements.lock.txt` pins exact versions and hashes for all dependencies (direct and transitive) — installs are reproducible on any machine. Direct dependencies are declared in `requirements.in`; after editing it, regenerate with `pip-compile --generate-hashes requirements.in` (`pip-tools` is only needed for that, not for a regular install).*
+
+Есть готовые команды через `make` (см. `make help`) — они просто оборачивают команды выше и ниже.
+
+*Shortcuts are available via `make` (see `make help`) — they just wrap the commands above and below.*
 
 ## Аргументы / Arguments
 
@@ -65,6 +73,16 @@ pytest
 
 *Tests cover query building, CSV export sanitization against formula injection, GitHub API interaction (mocked, no live requests), and CLI argument validation. The same suite runs automatically in CI on every push and pull request to `main`; merges into `main` are blocked until checks pass.*
 
+## Линтинг / Linting
+
+```bash
+ruff check .
+```
+
+`ruff` настроен только на правила pyflakes (`ruff.toml`) — ловит неиспользуемый код (импорты, переменные, недостижимые ветки), а не стиль форматирования. Тоже часть CI.
+
+*`ruff` is configured for pyflakes rules only (`ruff.toml`) — catches dead code (unused imports/variables, unreachable branches), not formatting style. Also part of CI.*
+
 ## Для ИИ-агентов / For AI agents
 
 Если вносите изменения с помощью coding-агента (Claude Code, Codex, Cursor и т.п.), см. [`AGENTS.md`](AGENTS.md) — там описаны safe-change границы и порядок проверки.
@@ -86,6 +104,7 @@ pytest
 - [`docs/product-context.md`](docs/product-context.md) — сценарии использования, термины, пример вывода, ограничения GitHub Search API.
 - [`CHANGELOG.md`](CHANGELOG.md) — заметки о значимых решениях по ходу разработки.
 - [`LICENSE`](LICENSE) — MIT.
+- [`Makefile`](Makefile) — `make help` для списка команд (`install`, `test`, `lint`, `run`, `clean`).
 
 ---
 *Автор использует официальный публичный GitHub REST API (api.github.com), без скрапинга и без авторизации.*

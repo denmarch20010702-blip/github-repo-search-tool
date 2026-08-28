@@ -20,17 +20,27 @@ scenarios, domain terms, an example output, and specs for the roadmap items.
 ```bash
 python -m venv venv
 source venv/bin/activate   # Windows: venv\Scripts\activate
-pip install -r requirements.txt
+pip install --require-hashes -r requirements.lock.txt
 ```
 
+`requirements.lock.txt` is generated from `requirements.in` via
+`pip-compile --generate-hashes requirements.in` (`pip-tools`, installed
+temporarily just for that — not a runtime dependency). If you add or change a
+direct dependency, edit `requirements.in` and regenerate the lock file; don't
+hand-edit `requirements.lock.txt`.
+
 No `.env` or secrets required — the tool calls the public GitHub API without
-authentication.
+authentication. `.env.example` documents a planned variable, not a current one.
 
 ## How to verify a change
 
 ```bash
+ruff check .
 pytest
 ```
+
+`ruff.toml` scopes `ruff` to pyflakes rules (`F`) only — dead code, not style.
+`make check` runs both.
 
 `pytest.ini` sets `pythonpath = .`, so the plain `pytest` command works from the
 repo root without needing `python -m pytest` or a package install.
