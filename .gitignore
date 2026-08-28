@@ -1,4 +1,5 @@
 venv/
+.venv/
 __pycache__/
 *.pyc
 repos.csv
@@ -7,4 +8,24 @@ repos2.csv
 ml_repos.csv
 ai_agents.csv
 pravki/
+
+# Секреты и переменные окружения
+.env
+
+# Кэши проверок
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Логи
+*.log
+
+# IDE и ОС
 .vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Артефакты сборки
+dist/
+build/
