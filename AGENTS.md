@@ -2,7 +2,8 @@
 
 Instructions for any AI coding agent (Claude Code, Codex, Cursor, Copilot, or similar)
 working in this repository. Human-readable context lives in `README.md` — read that
-first for what the project is and why it exists.
+first for what the project is and why it exists. `docs/product-context.md` has usage
+scenarios, domain terms, an example output, and specs for the roadmap items.
 
 ## Project shape
 
