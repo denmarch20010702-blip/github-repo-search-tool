@@ -18,6 +18,8 @@ HEADERS = {
     "User-Agent": "my-portfolio-github-search (contact: example@example.com)",
     "Accept": "application/vnd.github+json",
 }
+REQUEST_TIMEOUT_SECONDS = 10
+FALLBACK_QUERY = "stars:>1000"
 
 
 @dataclass
@@ -43,7 +45,7 @@ def build_query(language: str, topics: list[str], min_stars: int) -> str:
         parts.append(f"stars:>={min_stars}")
 
     if not parts:
-        parts.append("stars:>1000")
+        parts.append(FALLBACK_QUERY)
 
     return " ".join(parts)
 
@@ -55,7 +57,7 @@ def fetch_repos(query: str, sort: str, order: str, limit: int) -> list[Repo]:
         "order": order,
         "per_page": limit,
     }
-    response = requests.get(API_URL, params=params, headers=HEADERS, timeout=10)
+    response = requests.get(API_URL, params=params, headers=HEADERS, timeout=REQUEST_TIMEOUT_SECONDS)
     response.raise_for_status()
     data = response.json()
 

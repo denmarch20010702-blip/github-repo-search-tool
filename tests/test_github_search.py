@@ -34,7 +34,7 @@ def test_build_query_min_stars_only():
 
 
 def test_build_query_default_query():
-    assert build_query("", [], 0) == "stars:>1000"
+    assert build_query("", [], 0) == github_search.FALLBACK_QUERY
 
 
 def test_build_query_all_filters():
