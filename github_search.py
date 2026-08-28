@@ -15,7 +15,7 @@ import requests
 
 API_URL = "https://api.github.com/search/repositories"
 HEADERS = {
-    "User-Agent": "my-portfolio-github-search (contact: example@example.com)",
+    "User-Agent": "my-portfolio-github-search (contact: denmarch20010702@gmail.com)",
     "Accept": "application/vnd.github+json",
 }
 REQUEST_TIMEOUT_SECONDS = 10
