@@ -43,6 +43,10 @@ python github_search.py --language python --topic machine-learning
 | `--limit` | Сколько репозиториев получить, от 1 до 100 |
 | `--output` | Файл для сохранения: `.csv` или `.json` |
 
+Если не указать ни `--language`, ни `--topic`, ни `--min-stars`, используется fallback-запрос `stars:>1000` — иначе GitHub Search API отклонил бы пустой запрос. Каждый запрос к API ограничен таймаутом 10 секунд.
+
+*If none of `--language`, `--topic`, or `--min-stars` are given, a fallback query `stars:>1000` is used — otherwise the GitHub Search API would reject an empty query. Every API request has a 10-second timeout.*
+
 ## Примеры / Examples
 
 ```bash
@@ -72,6 +76,16 @@ pytest
 - [ ] Добавить сохранение истории запросов
 - [ ] Поддержка авторизации через токен GitHub для увеличения лимита запросов
 - [ ] Сравнение трендов по нескольким языкам в одном отчёте
+
+Краткие спеки для этих пунктов (ожидаемое поведение, формат данных, крайние случаи, способ проверки) — в [`docs/product-context.md`](docs/product-context.md).
+
+*Brief specs for these items (expected behavior, data format, edge cases, verification method) are in [`docs/product-context.md`](docs/product-context.md).*
+
+## Прочее / More
+
+- [`docs/product-context.md`](docs/product-context.md) — сценарии использования, термины, пример вывода, ограничения GitHub Search API.
+- [`CHANGELOG.md`](CHANGELOG.md) — заметки о значимых решениях по ходу разработки.
+- [`LICENSE`](LICENSE) — MIT.
 
 ---
 *Автор использует официальный публичный GitHub REST API (api.github.com), без скрапинга и без авторизации.*
