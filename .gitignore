@@ -3,6 +3,7 @@ venv/
 __pycache__/
 *.pyc
 pravki/
+_ai-usage-summary-DO-NOT-COMMIT.md
 
 # Локальные результаты поиска: github_search.py по умолчанию пишет в
 # repos.csv, но --output принимает любое имя с расширением .csv/.json —
