@@ -80,6 +80,9 @@ def _sanitize_csv_row(row: dict) -> dict:
 
 
 def save_to_csv(repos: list[Repo], path: str):
+    if not repos:
+        raise ValueError("save_to_csv() requires a non-empty list of repos")
+
     with open(path, "w", newline="", encoding="utf-8-sig") as f:
         writer = csv.DictWriter(f, fieldnames=list(asdict(repos[0]).keys()))
         writer.writeheader()
