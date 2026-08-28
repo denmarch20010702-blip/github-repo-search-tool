@@ -2,8 +2,23 @@ import csv
 import json
 
 import pytest
+import requests
 
-from github_search import Repo, build_query, save_to_csv, save_to_json
+import github_search
+from github_search import Repo, build_query, fetch_repos, save_to_csv, save_to_json
+
+
+class _FakeResponse:
+    def __init__(self, payload, status_error=None):
+        self._payload = payload
+        self._status_error = status_error
+
+    def raise_for_status(self):
+        if self._status_error:
+            raise self._status_error
+
+    def json(self):
+        return self._payload
 
 
 def test_build_query_language_only():
@@ -107,3 +122,75 @@ def test_save_to_json_does_not_sanitize_formula_injection(tmp_path):
         data = json.load(f)
 
     assert data[0]["description"] == malicious_value
+
+
+def test_save_to_csv_empty_list_raises_value_error(tmp_path):
+    with pytest.raises(ValueError):
+        save_to_csv([], str(tmp_path / "repos.csv"))
+
+
+def test_fetch_repos_parses_api_response(monkeypatch):
+    sample_payload = {
+        "items": [
+            {
+                "full_name": "octocat/hello-world",
+                "stargazers_count": 42,
+                "language": "Python",
+                "topics": ["ai", "ml"],
+                "html_url": "https://github.com/octocat/hello-world",
+                "description": "A sample repo",
+            },
+            {
+                "full_name": "octocat/no-metadata",
+                "stargazers_count": 1,
+                "language": None,
+                "topics": [],
+                "html_url": "https://github.com/octocat/no-metadata",
+                "description": None,
+            },
+        ]
+    }
+    captured_params = {}
+
+    def fake_get(url, params, headers, timeout):
+        captured_params.update(params)
+        return _FakeResponse(sample_payload)
+
+    monkeypatch.setattr(github_search.requests, "get", fake_get)
+
+    repos = fetch_repos("language:python", "stars", "desc", 10)
+
+    assert captured_params == {
+        "q": "language:python",
+        "sort": "stars",
+        "order": "desc",
+        "per_page": 10,
+    }
+    assert repos == [
+        Repo(
+            name="octocat/hello-world",
+            stars=42,
+            language="Python",
+            topics="ai, ml",
+            url="https://github.com/octocat/hello-world",
+            description="A sample repo",
+        ),
+        Repo(
+            name="octocat/no-metadata",
+            stars=1,
+            language="",
+            topics="",
+            url="https://github.com/octocat/no-metadata",
+            description="",
+        ),
+    ]
+
+
+def test_fetch_repos_raises_on_http_error(monkeypatch):
+    def fake_get(url, params, headers, timeout):
+        return _FakeResponse({}, status_error=requests.HTTPError("403 Client Error"))
+
+    monkeypatch.setattr(github_search.requests, "get", fake_get)
+
+    with pytest.raises(requests.HTTPError):
+        fetch_repos("stars:>1000", "stars", "desc", 10)
