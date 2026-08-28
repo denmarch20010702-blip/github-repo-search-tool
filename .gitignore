@@ -2,12 +2,14 @@ venv/
 .venv/
 __pycache__/
 *.pyc
-repos.csv
-repos.json
-repos2.csv
-ml_repos.csv
-ai_agents.csv
 pravki/
+
+# Локальные результаты поиска: github_search.py по умолчанию пишет в
+# repos.csv, но --output принимает любое имя с расширением .csv/.json —
+# все такие файлы в корне репозитория считаются локальным выводом,
+# а не отслеживаемым содержимым.
+/*.csv
+/*.json
 
 # Секреты и переменные окружения
 .env

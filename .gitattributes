@@ -1,0 +1,4 @@
+# Makefile recipes break under some make implementations if lines end in
+# CRLF (a trailing \r ends up inside the shell command). Force LF regardless
+# of local core.autocrlf.
+Makefile text eol=lf
