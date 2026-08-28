@@ -1,5 +1,7 @@
 # GitHub Repository Search Tool
 
+![CI](https://github.com/denmarch20010702-blip/github-repo-search-tool/actions/workflows/ci.yml/badge.svg)
+
 Скрипт для поиска репозиториев на GitHub с гибкими фильтрами: язык программирования, тема, минимальное количество звёзд, сортировка. Результаты сохраняются в CSV или JSON.
 
 *A script for searching GitHub repositories with flexible filters: programming language, topic, minimum stars, sort order. Results are exported to CSV or JSON.*
@@ -16,6 +18,7 @@
 - requests (HTTP-запросы к GitHub REST API)
 - argparse (гибкий CLI-интерфейс)
 - dataclasses (структурированное представление данных)
+- pytest (автоматические тесты)
 
 ## Как запустить / How to run
 
@@ -34,10 +37,10 @@ python github_search.py --language python --topic machine-learning
 |---|---|
 | `--language` | Язык программирования, например `python` |
 | `--topic` | Тема репозитория. Можно указывать несколько раз: `--topic pytest --topic playwright` |
-| `--min-stars` | Минимальное количество звёзд |
+| `--min-stars` | Минимальное количество звёзд (неотрицательное целое) |
 | `--sort` | Сортировка: `stars`, `forks` или `updated` |
 | `--order` | Направление сортировки: `asc` или `desc` |
-| `--limit` | Сколько репозиториев получить (макс. 100) |
+| `--limit` | Сколько репозиториев получить, от 1 до 100 |
 | `--output` | Файл для сохранения: `.csv` или `.json` |
 
 ## Примеры / Examples
@@ -47,6 +50,22 @@ python github_search.py --topic ai-agents --min-stars 500
 python github_search.py --language python --topic machine-learning --sort updated
 python github_search.py --topic playwright --topic pytest --output qa_tools.csv
 ```
+
+## Тестирование / Testing
+
+```bash
+pytest
+```
+
+Тесты покрывают построение поискового запроса, санитизацию CSV-экспорта от инъекции формул, работу с GitHub API через моки (без обращения к сети) и валидацию аргументов CLI. Тот же набор автоматически запускается в CI на каждый push и pull request в `main`; слияние в `main` заблокировано, пока проверки не пройдут.
+
+*Tests cover query building, CSV export sanitization against formula injection, GitHub API interaction (mocked, no live requests), and CLI argument validation. The same suite runs automatically in CI on every push and pull request to `main`; merges into `main` are blocked until checks pass.*
+
+## Для ИИ-агентов / For AI agents
+
+Если вносите изменения с помощью coding-агента (Claude Code, Codex, Cursor и т.п.), см. [`AGENTS.md`](AGENTS.md) — там описаны safe-change границы и порядок проверки.
+
+*If you're contributing via a coding agent (Claude Code, Codex, Cursor, etc.), see [`AGENTS.md`](AGENTS.md) for safe-change boundaries and how to verify changes.*
 
 ## Планы по развитию / Roadmap
 
