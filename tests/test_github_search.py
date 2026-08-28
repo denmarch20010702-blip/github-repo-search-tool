@@ -5,7 +5,7 @@ import pytest
 import requests
 
 import github_search
-from github_search import Repo, build_query, fetch_repos, save_to_csv, save_to_json
+from github_search import Repo, build_parser, build_query, fetch_repos, save_to_csv, save_to_json
 
 
 class _FakeResponse:
@@ -194,3 +194,28 @@ def test_fetch_repos_raises_on_http_error(monkeypatch):
 
     with pytest.raises(requests.HTTPError):
         fetch_repos("stars:>1000", "stars", "desc", 10)
+
+
+@pytest.mark.parametrize("limit", ["1", "50", "100"])
+def test_limit_accepts_values_in_valid_range(limit):
+    args = build_parser().parse_args(["--limit", limit])
+    assert args.limit == int(limit)
+
+
+@pytest.mark.parametrize("limit", ["0", "101", "-5"])
+def test_limit_rejects_values_out_of_range(limit, capsys):
+    with pytest.raises(SystemExit):
+        build_parser().parse_args(["--limit", limit])
+    assert "must be between 1 and 100" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("min_stars", ["0", "100"])
+def test_min_stars_accepts_non_negative_values(min_stars):
+    args = build_parser().parse_args(["--min-stars", min_stars])
+    assert args.min_stars == int(min_stars)
+
+
+def test_min_stars_rejects_negative_value(capsys):
+    with pytest.raises(SystemExit):
+        build_parser().parse_args(["--min-stars", "-1"])
+    assert "must be a non-negative integer" in capsys.readouterr().err
