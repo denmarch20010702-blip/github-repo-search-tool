@@ -95,7 +95,21 @@ def save_to_json(repos: list[Repo], path: str):
         json.dump([asdict(r) for r in repos], f, ensure_ascii=False, indent=2)
 
 
-def main():
+def _non_negative_int(value: str) -> int:
+    parsed = int(value)
+    if parsed < 0:
+        raise argparse.ArgumentTypeError(f"must be a non-negative integer, got {value}")
+    return parsed
+
+
+def _limit_int(value: str) -> int:
+    parsed = int(value)
+    if not 1 <= parsed <= 100:
+        raise argparse.ArgumentTypeError(f"must be between 1 and 100, got {value}")
+    return parsed
+
+
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Расширенный поиск GitHub-репозиториев")
     parser.add_argument("--language", help="Язык программирования, например 'python'")
     parser.add_argument(
@@ -105,7 +119,7 @@ def main():
         dest="topics",
         help="Тема репозитория, например 'automation-testing'. Можно указывать несколько раз.",
     )
-    parser.add_argument("--min-stars", type=int, default=0, help="Минимальное число звёзд")
+    parser.add_argument("--min-stars", type=_non_negative_int, default=0, help="Минимальное число звёзд")
     parser.add_argument(
         "--sort",
         choices=["stars", "forks", "updated"],
@@ -113,9 +127,13 @@ def main():
         help="По чему сортировать результаты",
     )
     parser.add_argument("--order", choices=["asc", "desc"], default="desc")
-    parser.add_argument("--limit", type=int, default=10, help="Сколько репозиториев получить (макс. 100)")
+    parser.add_argument("--limit", type=_limit_int, default=10, help="Сколько репозиториев получить (макс. 100)")
     parser.add_argument("--output", default="repos.csv", help="Файл для сохранения: .csv или .json")
-    args = parser.parse_args()
+    return parser
+
+
+def main():
+    args = build_parser().parse_args()
 
     query = build_query(args.language, args.topics, args.min_stars)
     print(f"Поисковый запрос к GitHub: {query}")
